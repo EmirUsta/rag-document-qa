@@ -26,6 +26,20 @@ I run it on my home server (Proxmox LXC + Docker Compose).
 
 ## How it works
 
+```mermaid
+flowchart LR
+    U[React UI] -->|PDF upload| A[FastAPI]
+    A --> Q[Ingestion queue]
+    Q --> P[Unstructured parser] --> C[Chunker] --> E1[E5 embeddings]
+    E1 --> W[(Weaviate)]
+    U -->|question| A
+    A --> E2[E5 query embedding] --> W
+    W -->|chunks + distance| G{Distance threshold}
+    G -->|no relevant chunk| N[Not found answer]
+    G -->|relevant chunks| L[Llama 3.1 via Groq]
+    L -->|streamed answer + sources| U
+```
+
 1. **Ingestion:** an uploaded PDF is validated (extension and magic bytes), parsed with Unstructured, split into chunks, embedded with E5 (`passage:` prefix) and written to Weaviate with only the metadata the app needs (document id, file name, page).
 2. **Retrieval:** the question is embedded (`query:` prefix) and searched with a raw cosine `near_vector` query, so real distances are available.
 3. **Grounding filter:** chunks farther than a distance threshold are dropped. If nothing is left, the app answers "not found" without calling the LLM.

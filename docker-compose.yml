@@ -1,0 +1,44 @@
+services:
+  weaviate:
+    image: semitechnologies/weaviate:1.38.2
+    restart: unless-stopped
+    environment:
+      QUERY_DEFAULTS_LIMIT: "25"
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      ENABLE_MODULES: ""
+      AUTOSCHEMA_ENABLED: "false"
+      CLUSTER_HOSTNAME: "node1"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    networks: [ragnet]
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      WEAVIATE_HOST: weaviate
+      WEAVIATE_HTTP_PORT: "8080"
+      WEAVIATE_GRPC_PORT: "50051"
+    volumes:
+      - ./backend/data:/app/data
+      - hf_cache:/app/.cache/huggingface
+    depends_on: [weaviate]
+    networks: [ragnet]
+
+  nginx:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "1234:80"
+    depends_on: [backend]
+    networks: [ragnet]
+
+volumes:
+  weaviate_data:
+  hf_cache:
+
+networks:
+  ragnet:

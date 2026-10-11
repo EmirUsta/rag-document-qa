@@ -1,5 +1,7 @@
 # RAG Document Q&A
 
+[![CI](https://github.com/EmirUsta/rag-document-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/EmirUsta/rag-document-qa/actions/workflows/ci.yml)
+
 A self-hosted question-answering app over your own PDF documents. Upload PDFs, ask questions in a chat, and get answers grounded only in the uploaded documents, with the source file and page for every answer.
 
 I run it on my home server (Proxmox LXC + Docker Compose).
